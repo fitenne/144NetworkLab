@@ -1,20 +1,10 @@
 Lab 0 Writeup
 =============
 
-My name: [your name here]
+# ByteStream
 
-My SUNet ID: [your sunetid here]
+循环队列实现。
 
-I collaborated with: [list sunetids here]
+注意为了方便区分空队列和满队列，底层依赖的数组的大小比队列的容量大 1。
 
-This lab took me about [n] hours to do. I [did/did not] attend the lab session.
-
-My secret code from section 2.1 was: [code here]
-
-- Optional: I had unexpected difficulty with: [describe]
-
-- Optional: I think you could make this lab better by: [describe]
-
-- Optional: I was surprised by: [describe]
-
-- Optional: I'm not sure about: [describe]
+代码注释增加了一下特殊情况时，ByteStream 的表现。
