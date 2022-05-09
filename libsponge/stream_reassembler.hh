@@ -62,6 +62,10 @@ class StreamReassembler {
     //! \brief Is the internal state empty (other than the output stream)?
     //! \returns `true` if no substrings are waiting to be assembled
     bool empty() const;
+
+private:
+    void _push_stroage(const std::string &data, size_t index, size_t interested_l, size_t interested_r, size_t unaccp);
+    void _assemble();
 };
 
 #endif  // SPONGE_LIBSPONGE_STREAM_REASSEMBLER_HH

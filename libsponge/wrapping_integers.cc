@@ -14,7 +14,8 @@ using namespace std;
 //! \param n The input absolute 64-bit sequence number
 //! \param isn The initial sequence number
 WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
-    return isn + n;
+    // cast to uint32_t equivalent mod (1ull << 32)
+    return isn + static_cast<uint32_t>(n);
 }
 
 //! Transform a WrappingInt32 into an "absolute" 64-bit sequence number (zero-indexed)
@@ -30,8 +31,6 @@ WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
 uint64_t unwrap(WrappingInt32 n, WrappingInt32 isn, uint64_t checkpoint) {
     int32_t steps = n - wrap(checkpoint, isn);
 
-    if (steps < 0 && checkpoint < static_cast<uint64_t>(-steps)) { // underflow
-        return checkpoint + (1ul << 32) + steps;
-    }
-    return checkpoint + steps;
+    int64_t tmp = checkpoint + steps;
+    return tmp >= 0 ? checkpoint + steps : tmp + (1UL << 32);
 }

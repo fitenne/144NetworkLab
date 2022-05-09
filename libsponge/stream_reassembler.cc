@@ -26,42 +26,10 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
            r = min(index + data.size(), unaccp); 
     
     // push [l, r) to _stroage
-    size_t interval_start = _unasmed;
-    for (auto it = _stroage.begin(); it != _stroage.end(); ++it) {
-        size_t interval_end = it->index;
-        size_t b = max(l, interval_start);
-        size_t e = min(r, interval_end);
-        if (e > b) {
-            _stroage.emplace(it, b, std::string(data.begin() + (b - index), data.begin() + (e - index)));
-            _unassembled_bytes += (e - b);
-        }
-
-        interval_start = it->index + it->data.size();
-        if (interval_start >= r) break;
-    }
-    size_t b = max(l, interval_start);
-    size_t e = min(r, unaccp);
-    if (e > b) {
-        _stroage.emplace_back(b, std::string(data.begin() + (b - index), data.begin() + (e - index)));
-        _unassembled_bytes += (e - b);
-    }
+    _push_stroage(data, index, l, r, unaccp);
     
     // assemble
-    while (!_stroage.empty() && _stroage.front().index == _unasmed) {
-        auto &d = _stroage.front().data;
-        size_t bytes = _output.write(d);
-
-        _unassembled_bytes -= d.size();
-        _unasmed += bytes;
-        if (bytes != d.size()) {
-            // try later?
-            _stroage.front().index += bytes;
-            d = std::string(d.begin() + bytes, d.end());
-            break;
-        }
-
-        _stroage.pop_front();
-    }
+    _assemble();
 
     if (eof) {
         _eof_flag = true;
@@ -78,3 +46,43 @@ size_t StreamReassembler::unassembled_bytes() const { return _unassembled_bytes;
 size_t StreamReassembler::next_unassembled() const { return _unasmed; }
 
 bool StreamReassembler::empty() const { return _unassembled_bytes == 0; }
+
+void StreamReassembler::_push_stroage(const std::string &data, size_t index, size_t interested_l, size_t interested_r, size_t unaccp) {
+    size_t interval_start = _unasmed;
+    for (auto it = _stroage.begin(); it != _stroage.end(); ++it) {
+        size_t interval_end = it->index;
+        size_t b = max(interested_l, interval_start);
+        size_t e = min(interested_r, interval_end);
+        if (e > b) {
+            _stroage.emplace(it, b, std::string(data.begin() + (b - index), data.begin() + (e - index)));
+            _unassembled_bytes += (e - b);
+        }
+
+        interval_start = it->index + it->data.size();
+        if (interval_start >= interested_r) break;
+    }
+    size_t b = max(interested_l, interval_start);
+    size_t e = min(interested_r, unaccp);
+    if (e > b) {
+        _stroage.emplace_back(b, std::string(data.begin() + (b - index), data.begin() + (e - index)));
+        _unassembled_bytes += (e - b);
+    }    
+}
+
+void StreamReassembler::_assemble() {
+    while (!_stroage.empty() && _stroage.front().index == _unasmed) {
+        auto &d = _stroage.front().data;
+        size_t bytes = _output.write(d);
+
+        _unassembled_bytes -= d.size();
+        _unasmed += bytes;
+        if (bytes != d.size()) {
+            // try later?
+            _stroage.front().index += bytes;
+            d = std::string(d.begin() + bytes, d.end());
+            break;
+        }
+
+        _stroage.pop_front();
+    }
+}
