@@ -20,8 +20,8 @@ class TCPReceiver {
     //! The maximum number of bytes we'll store.
     size_t _capacity;
 
-    WrappingInt32 _isn;
-    std::optional<uint64_t> _ackno; // absolute seqno
+    WrappingInt32 _isn{0};
+    std::optional<uint64_t> _ackno{}; // absolute seqno
 
     // enum class Stat {
     //   LISTEN, SYN_RECV, FIN_RECV
@@ -32,7 +32,7 @@ class TCPReceiver {
     //!
     //! \param capacity the maximum number of bytes that the receiver will
     //!                 store in its buffers at any give time.
-    TCPReceiver(const size_t capacity) : _reassembler(capacity), _capacity(capacity), _isn(0), _ackno() {}
+    TCPReceiver(const size_t capacity) : _reassembler(capacity), _capacity(capacity) {}
 
     //! \name Accessors to provide feedback to the remote TCPSender
     //!@{

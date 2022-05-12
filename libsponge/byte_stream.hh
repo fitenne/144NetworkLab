@@ -22,13 +22,13 @@ class ByteStream {
     // buffer used for a circular queue
     std::vector<char> _buffer{};
     size_t _capacity;
-    size_t _front{1}, _end{0}; // first/last element, the queue is full when tail = head
+    size_t _front{0}, _end{0}; // first/last element, the queue is full when tail = head
 
     size_t _bytes_written{0}, _bytes_read{0};
 
     bool _input_ended{false};
 
-    bool _error{};  //!< Flag indicating that the stream suffered an error.
+    bool _error{false};  //!< Flag indicating that the stream suffered an error.
 
   public:
     //! Construct a stream with room for `capacity` bytes.

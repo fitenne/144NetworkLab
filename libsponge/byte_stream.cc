@@ -12,9 +12,8 @@ void DUMMY_CODE(Targs &&.../* unused */) {}
 
 using namespace std;
 
-ByteStream::ByteStream(const size_t capacity)
-    : _capacity{capacity + 1}, _front{0}, _end{0}, _bytes_written{0}, _bytes_read{0}, _input_ended{false}, _error{false} {
-    _buffer.reserve(capacity + 1); // one extra space to keep code simple
+ByteStream::ByteStream(const size_t capacity) : _capacity{capacity + 1} {
+    _buffer.reserve(capacity + 1);  // one extra space to keep code simple
 }
 
 size_t ByteStream::write(const string &data) {
@@ -40,11 +39,12 @@ size_t ByteStream::write(const string &data) {
 string ByteStream::peek_output(const size_t len) const {
     // peek the maximum available if len > buffer size
     size_t l = len;
-    if (l > buffer_size()) l = buffer_size();
+    if (l > buffer_size())
+        l = buffer_size();
 
     if (_end > _front) {
         return std::string(_buffer.begin() + _front, _buffer.begin() + _front + l);
-    } 
+    }
 
     std::string s(_buffer.begin() + _front, _buffer.begin() + _capacity);
     s += std::string(_buffer.begin(), _buffer.begin() + l - (_capacity - _front));
@@ -66,23 +66,21 @@ void ByteStream::pop_output(const size_t len) {
 //! \param[in] len bytes will be popped and returned
 //! \returns a string
 std::string ByteStream::read(const size_t len) {
-    if (!len) return std::string();
+    if (!len)
+        return std::string();
 
     auto s = peek_output(len);
     pop_output(min(len, buffer_size()));
     return s;
 }
 
-void ByteStream::end_input() {
-    _input_ended = true;
-}
+void ByteStream::end_input() { _input_ended = true; }
 
-bool ByteStream::input_ended() const {
-    return _input_ended;
-}
+bool ByteStream::input_ended() const { return _input_ended; }
 
 size_t ByteStream::buffer_size() const {
-    if (buffer_empty()) return 0;
+    if (buffer_empty())
+        return 0;
 
     if (_end > _front) {
         return _end - _front;
@@ -91,22 +89,12 @@ size_t ByteStream::buffer_size() const {
     return _capacity - _front + _end;
 }
 
-bool ByteStream::buffer_empty() const {
-    return _front == _end;
-}
+bool ByteStream::buffer_empty() const { return _front == _end; }
 
-bool ByteStream::eof() const {
-    return input_ended() && buffer_empty();
-}
+bool ByteStream::eof() const { return input_ended() && buffer_empty(); }
 
-size_t ByteStream::bytes_written() const {
-    return _bytes_written;
-}
+size_t ByteStream::bytes_written() const { return _bytes_written; }
 
-size_t ByteStream::bytes_read() const {
-    return _bytes_read;
-}
+size_t ByteStream::bytes_read() const { return _bytes_read; }
 
-size_t ByteStream::remaining_capacity() const {
-    return _capacity - 1 - buffer_size();
-}
+size_t ByteStream::remaining_capacity() const { return _capacity - 1 - buffer_size(); }

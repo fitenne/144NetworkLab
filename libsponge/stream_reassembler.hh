@@ -20,11 +20,11 @@ class StreamReassembler {
     };
     std::list<Segment> _stroage;
 
-    size_t _unasmed;
-    size_t _unassembled_bytes;
+    size_t _unasmed{0};
+    size_t _unassembled_bytes{0};
 
-    bool _eof_flag;
-    size_t _last_byte;
+    bool _eof_flag{false};
+    size_t _last_byte{0};
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
