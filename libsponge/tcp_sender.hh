@@ -7,6 +7,8 @@
 #include "wrapping_integers.hh"
 
 #include <functional>
+#include <list>
+#include <optional>
 #include <queue>
 
 //! \brief The "sender" part of a TCP implementation.
@@ -31,6 +33,35 @@ class TCPSender {
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+
+    //! assume receiver's window size is one byte
+    size_t _window_size{1};
+
+    //! retransmission timeout
+    unsigned int _RTO{_initial_retransmission_timeout};
+
+    //! the number of consecutive retransmissions
+    unsigned int _consec_retx{0};
+
+    //! ms before we should retransmit the oldest segment
+    std::optional<size_t> _retx_timer{};
+
+    //! the absulote seqno got acked
+    uint64_t _last_acked{0};
+
+    //! backup the in flight bytes
+    struct InFlightSegment {
+        uint64_t seqno_absolute;
+        TCPSegment seg;
+        bool backoff_timer; //! if window size = 0, retx should not change RTO or _consec_retx
+        InFlightSegment(uint64_t _seqno_absolute, const TCPSegment &_seg, bool _backoff_timer = true)
+            : seqno_absolute(_seqno_absolute), seg(_seg), backoff_timer(_backoff_timer) {}
+    };
+    std::list<InFlightSegment> _in_flight{};
+    uint64_t _bytes_in_flight{0};
+
+    //! send a segment and may reset retransmission timer
+    void _send_segment(const TCPSegment &segment);
 
   public:
     //! Initialize a TCPSender

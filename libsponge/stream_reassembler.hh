@@ -18,7 +18,7 @@ class StreamReassembler {
       Segment(size_t i, const std::string &&d): index(i), data(d){}
       Segment(size_t i, const std::string &d): index(i), data(d){}
     };
-    std::list<Segment> _stroage;
+    std::list<Segment> _stroage{};
 
     size_t _unasmed{0};
     size_t _unassembled_bytes{0};
