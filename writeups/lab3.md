@@ -1,29 +1,12 @@
 Lab 3 Writeup
 =============
 
-My name: [your name here]
+# 需要注意的点
 
-My SUNet ID: [your sunetid here]
+`fill_window` 需要尽可能填充接收方的窗口，可能会在一次调用中发送多个包。
 
-I collaborated with: [list sunetids here]
+header 中 fin 的设置与否，需要同时注意窗口大小和输入流的状态。
 
-I would like to thank/reward these classmates for their help: [list sunetids here]
+舍弃不可能的 ack。（比如对没有发送的包的 ack。）
 
-This lab took me about [n] hours to do. I [did/did not] attend the lab session.
-
-Program Structure and Design of the TCPSender:
-[]
-
-Implementation Challenges:
-[]
-
-Remaining Bugs:
-[]
-
-- Optional: I had unexpected difficulty with: [describe]
-
-- Optional: I think you could make this lab better by: [describe]
-
-- Optional: I was surprised by: [describe]
-
-- Optional: I'm not sure about: [describe]
+特别的，当 windows size 为 0 时，`fill_window` 表现得像是 window size 为 1，但应该假设这种包不会被 ack，即使超时，也不应修改连续重传数和 RTO。
