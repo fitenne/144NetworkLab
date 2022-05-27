@@ -46,8 +46,10 @@ string ByteStream::peek_output(const size_t len) const {
         return std::string(_buffer.begin() + _front, _buffer.begin() + _front + l);
     }
 
-    std::string s(_buffer.begin() + _front, _buffer.begin() + _capacity);
-    s += std::string(_buffer.begin(), _buffer.begin() + l - (_capacity - _front));
+    std::string s(_buffer.begin() + _front, _buffer.begin() + min(_front + l, _capacity));
+    if (s.size() < l) {
+        s += std::string(_buffer.begin(), _buffer.begin() + l - (_capacity - _front));
+    }
     return s;
 }
 

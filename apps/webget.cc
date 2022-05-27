@@ -24,7 +24,7 @@ void get_URL(const string &host, const string &path) {
     client.write(std::string("Host: ") + host + "\r\n");
     client.write(std::string("Connection: close\r\n"));
     client.write(std::string("\r\n"));
-    for (; !client.eof(); ) {
+    for (; !client.eof();) {
         std::string buf = client.read();
         cout << buf;
     }

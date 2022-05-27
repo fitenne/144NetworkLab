@@ -22,7 +22,7 @@ class ByteStream {
     // buffer used for a circular queue
     std::vector<char> _buffer{};
     size_t _capacity;
-    size_t _front{0}, _end{0}; // first/last element, the queue is full when tail = head
+    size_t _front{0}, _end{0};  // first/last element, the queue is empty when front = end
 
     size_t _bytes_written{0}, _bytes_read{0};
 

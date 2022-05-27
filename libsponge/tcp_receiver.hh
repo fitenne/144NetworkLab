@@ -21,7 +21,7 @@ class TCPReceiver {
     size_t _capacity;
 
     WrappingInt32 _isn{0};
-    std::optional<uint64_t> _ackno{}; // absolute seqno
+    std::optional<uint64_t> _ackno{};  // absolute seqno
 
     // enum class Stat {
     //   LISTEN, SYN_RECV, FIN_RECV

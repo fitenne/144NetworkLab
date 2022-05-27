@@ -53,7 +53,7 @@ class TCPSender {
     struct InFlightSegment {
         uint64_t seqno_absolute;
         TCPSegment seg;
-        bool backoff_timer; //! if window size = 0, retx should not change RTO or _consec_retx
+        bool backoff_timer;  //! if window size = 0, retx should not change RTO or _consec_retx
         InFlightSegment(uint64_t _seqno_absolute, const TCPSegment &_seg, bool _backoff_timer = true)
             : seqno_absolute(_seqno_absolute), seg(_seg), backoff_timer(_backoff_timer) {}
     };
