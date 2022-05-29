@@ -41,8 +41,6 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
 
 size_t StreamReassembler::unassembled_bytes() const { return _unassembled_bytes; }
 
-size_t StreamReassembler::next_unassembled() const { return _unasmed; }
-
 bool StreamReassembler::empty() const { return _unassembled_bytes == 0; }
 
 void StreamReassembler::_push_stroage(const std::string &data,

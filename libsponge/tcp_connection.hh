@@ -27,6 +27,7 @@ class TCPConnection {
 
     void _send_over_internet();
     void _may_shutdown();
+    void _set_error();
 
   public:
     //! \name "Input" interface for the writer

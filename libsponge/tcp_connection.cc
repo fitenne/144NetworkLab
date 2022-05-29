@@ -8,7 +8,7 @@
 // automated checks run by `make check`.
 
 template <typename... Targs>
-void DUMMY_CODE(Targs &&.../* unused */) {}
+void DUMMY_CODE(Targs &&... /* unused */) {}
 
 using namespace std;
 
@@ -22,19 +22,19 @@ void TCPConnection::_send_over_internet() {
         }
         front.header().win = _receiver.window_size();
 
-        // !debug
-        // std::cerr << "sending: " << front.header().summary() << std::endl;
-
         _segments_out.emplace(front);
 
         if (front.header().rst) {
-            _sender.stream_in().set_error();
-            _receiver.stream_out().set_error();
-            _active = false;
+            _set_error();
             return;
         }
         que.pop();
     }
+
+    if (_sender.stream_in().eof() && _sender.bytes_in_flight() == 0 && _sender.next_seqno_absolute() == _sender.stream_in().bytes_written() + 2) {
+        _output_ended = true;
+    }
+    _may_shutdown();
 }
 
 void TCPConnection::_may_shutdown() {
@@ -47,6 +47,12 @@ void TCPConnection::_may_shutdown() {
     }
 }
 
+void TCPConnection::_set_error() {
+    _sender.stream_in().set_error();
+    _receiver.stream_out().set_error();
+    _active = false;
+}
+
 size_t TCPConnection::remaining_outbound_capacity() const { return _sender.stream_in().remaining_capacity(); }
 
 size_t TCPConnection::bytes_in_flight() const { return _sender.bytes_in_flight(); }
@@ -56,15 +62,13 @@ size_t TCPConnection::unassembled_bytes() const { return _receiver.unassembled_b
 size_t TCPConnection::time_since_last_segment_received() const { return _time_since_last_segment_received; }
 
 void TCPConnection::segment_received(const TCPSegment &seg) {
-    // !debug
-    // std::cerr << "received: " << seg.header().summary() << std::endl;
-
+    if (seg.header().ack && _sender.next_seqno_absolute() == 0) return; // CLOSED
     if (seg.header().rst) {
-        _sender.stream_in().set_error();
-        _receiver.stream_out().set_error();
-        _active = false;
+        _set_error();
         return;
     }
+
+    _time_since_last_segment_received = 0;
 
     //! keep alive segment
     if (_receiver.ackno().has_value() and (seg.length_in_sequence_space() == 0) and
@@ -75,34 +79,20 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
     }
 
     if (seg.header().ack) {
-        if (_sender.next_seqno_absolute() == 0) {
-            return;
-        }
-
         _sender.ack_received(seg.header().ackno, seg.header().win);
-        if (_sender.stream_in().input_ended() && _sender.next_seqno() == seg.header().ackno) {
-            _output_ended = true;
-        }
     }
-
     _receiver.segment_received(seg);
     if (_receiver.stream_out().input_ended() && !_sender.stream_in().input_ended()) {
         _linger_after_streams_finish = false;
     }
-    size_t qsize = _sender.segments_out().size();
+    _input_ended = _receiver.stream_out().input_ended();
+
     _sender.fill_window();
-    if (seg.length_in_sequence_space() != 0 && qsize == _sender.segments_out().size()) {
+    if (seg.length_in_sequence_space() != 0 && _sender.segments_out().empty()) {
         //! prefer fill, fallback to empty segment to asure at least one segment is sent
         _sender.send_empty_segment();
     }
     _send_over_internet();
-
-    if (seg.header().fin && _receiver.unassembled_bytes() == 0) {
-        _input_ended = true;
-    }
-
-    _time_since_last_segment_received = 0;
-
     _may_shutdown();
 }
 
@@ -120,14 +110,13 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
     _time_since_last_segment_received += ms_since_last_tick;
     _sender.tick(ms_since_last_tick);
     if (_sender.consecutive_retransmissions() > TCPConfig::MAX_RETX_ATTEMPTS) {
-        //! not excepted to get empty queue
         _sender.segments_out().back().header().rst = true;
     }
 
+    _send_over_internet();
     if (_lingering && _time_since_last_segment_received >= 10 * _cfg.rt_timeout) {
         _active = false;
     }
-    _send_over_internet();
 }
 
 void TCPConnection::end_input_stream() {

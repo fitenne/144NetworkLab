@@ -1,29 +1,11 @@
 Lab 4 Writeup
 =============
 
-My name: [your name here]
+基本是胶水工作。
 
-My SUNet ID: [your sunetid here]
+特别注意 TCP 状态的定义、判定。实际上由于之前没有太注意这一点，埋下了很多 Bug，在这一次的测试中集中爆发了一波。
 
-I collaborated with: [list sunetids here]
-
-I would like to thank/reward these classmates for their help: [list sunetids here]
-
-This lab took me about [n] hours to do. I [did/did not] attend the lab session.
-
-Program Structure and Design of the TCPConnection:
-[]
-
-Implementation Challenges:
-[]
-
-Remaining Bugs:
-[]
-
-- Optional: I had unexpected difficulty with: [describe]
-
-- Optional: I think you could make this lab better by: [describe]
-
-- Optional: I was surprised by: [describe]
-
-- Optional: I'm not sure about: [describe]
+调试 Tip：
+- 在 TCPConnection 中对发送和接受的包打 log，其他可能的地方同样。
+- 在 txrx.sh 中输出测试使用的命令。
+- 手动运行测试使用的命令，这样便于将两端的 log 分开。

@@ -54,7 +54,7 @@ void TCPSender::fill_window() {
 
         if (_stream.eof()) {
             uint64_t r = _next_seqno + seg.length_in_sequence_space();
-            if (r <= _stream.bytes_written() + 1 && r < win_rbound) {
+            if (r == _stream.bytes_written() + 1 && r < win_rbound) {
                 seg.header().fin = true;
             }
         }
@@ -125,8 +125,7 @@ unsigned int TCPSender::consecutive_retransmissions() const { return _consec_ret
 void TCPSender::send_empty_segment() {
     TCPSegment seg = TCPSegment();
     //! should generate and send a TCPSegment that has zero length in sequence space
-    seg.header().seqno = WrappingInt32(_next_seqno);
-    seg.payload() = Buffer();
+    seg.header().seqno = wrap(_next_seqno, _isn);
 
     _segments_out.push(seg);
     return;

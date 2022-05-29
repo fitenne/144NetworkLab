@@ -23,8 +23,8 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
         if (abs_seqno + seg.length_in_sequence_space() > _ackno) {
             _reassembler.push_substring(p.copy(), abs_seqno > 0 ? abs_seqno - 1 : 0, h.fin);
         }
-        _ackno = _reassembler.next_unassembled() + 1;
-        if (_reassembler.stream_out().input_ended()) {  // fin received
+        _ackno = 1 + _reassembler.stream_out().bytes_written();
+        if (_reassembler.stream_out().input_ended()) {
             _ackno.value()++;
         }
     }
