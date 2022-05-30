@@ -7,6 +7,7 @@
 
 #include <optional>
 #include <queue>
+#include <unordered_map>
 
 //! \brief A "network interface" that connects IP (the internet layer, or network layer)
 //! with Ethernet (the network access layer, or link layer).
@@ -36,6 +37,28 @@ class NetworkInterface {
 
     //! IP (known as internet-layer or network-layer) address of the interface
     Address _ip_address;
+
+    static inline const size_t _ms_lookup_keepalive = 30000;
+    static inline const size_t _ms_ARP_request_timeout = 5000;
+
+    struct _LookupEntry {
+      EthernetAddress ethaddr{};
+      size_t ttl = _ms_lookup_keepalive;
+      _LookupEntry(const EthernetAddress &addr = {}): ethaddr(addr) {}
+    };
+    //! lookup table from ipv4 address to ethernet address
+    std::unordered_map<uint32_t, _LookupEntry> _lookup{};
+
+    //! InternetDatagram to be sent
+    std::unordered_map<uint32_t, std::vector<std::pair<InternetDatagram, Address>>> _send_later{};
+
+    //! ttl of sent ARP requests
+    std::unordered_map<uint32_t, size_t> _ARP_request_ttl{};
+
+    //! new ARP reply
+    EthernetFrame _new_ARP_reply(const EthernetAddress &dst_eth, const uint32_t dst_ip);
+    //! new ARP request
+    EthernetFrame _new_ARP_request(const uint32_t addr);
 
     //! outbound queue of Ethernet frames that the NetworkInterface wants sent
     std::queue<EthernetFrame> _frames_out{};
