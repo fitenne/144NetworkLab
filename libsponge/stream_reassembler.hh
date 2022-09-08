@@ -15,12 +15,12 @@ class StreamReassembler {
     struct Segment {
         size_t index{0};
         std::string data;
-        Segment(size_t i, const std::string &&d) : index(i), data(d) {}
+        // Segment(size_t i, const std::string &&d) : index(i), data(std::move(d)) {}
         Segment(size_t i, const std::string &d) : index(i), data(d) {}
     };
     std::list<Segment> _stroage{};
 
-    size_t _unasmed{0};
+    size_t _unasmed{0};  // index of first unassembled byte
     size_t _unassembled_bytes{0};
 
     bool _eof_flag{false};
@@ -62,7 +62,7 @@ class StreamReassembler {
     bool empty() const;
 
   private:
-    void _push_stroage(const std::string &data, size_t index, size_t interested_l, size_t interested_r, size_t unaccp);
+    void _push_stroage(const std::string &data, size_t index, size_t unaccp);
     void _assemble();
 };
 

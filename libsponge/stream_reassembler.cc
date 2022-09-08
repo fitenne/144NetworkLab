@@ -20,11 +20,8 @@ StreamReassembler::StreamReassembler(const size_t capacity) : _output(capacity),
 void StreamReassembler::push_substring(const string &data, const size_t index, const bool eof) {
     size_t unaccp = _output.bytes_read() + _capacity;
 
-    // interval we are interested in
-    size_t l = max(index, _unasmed), r = min(index + data.size(), unaccp);
-
     // push [l, r) to _stroage
-    _push_stroage(data, index, l, r, unaccp);
+    _push_stroage(data, index, unaccp);
 
     // assemble
     _assemble();
@@ -45,25 +42,23 @@ bool StreamReassembler::empty() const { return _unassembled_bytes == 0; }
 
 void StreamReassembler::_push_stroage(const std::string &data,
                                       size_t index,
-                                      size_t interested_l,
-                                      size_t interested_r,
                                       size_t unaccp) {
+    const size_t last_byte = index + data.size();
     size_t interval_start = _unasmed;
     for (auto it = _stroage.begin(); it != _stroage.end(); ++it) {
-        size_t interval_end = it->index;
-        size_t b = max(interested_l, interval_start);
-        size_t e = min(interested_r, interval_end);
+        size_t b = max(index, interval_start);
+        size_t e = min(last_byte, it->index);
         if (e > b) {
             _stroage.emplace(it, b, std::string(data.begin() + (b - index), data.begin() + (e - index)));
             _unassembled_bytes += (e - b);
         }
 
         interval_start = it->index + it->data.size();
-        if (interval_start >= interested_r)
+        if (interval_start >= unaccp || interval_start >= last_byte)
             break;
     }
-    size_t b = max(interested_l, interval_start);
-    size_t e = min(interested_r, unaccp);
+    size_t b = max(index, interval_start);
+    size_t e = min(last_byte, unaccp);
     if (e > b) {
         _stroage.emplace_back(b, std::string(data.begin() + (b - index), data.begin() + (e - index)));
         _unassembled_bytes += (e - b);
@@ -75,7 +70,7 @@ void StreamReassembler::_assemble() {
         auto &d = _stroage.front().data;
         size_t bytes = _output.write(d);
 
-        _unassembled_bytes -= d.size();
+        _unassembled_bytes -= bytes;
         _unasmed += bytes;
         if (bytes != d.size()) {
             // try later?
