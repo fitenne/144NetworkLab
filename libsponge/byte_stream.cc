@@ -38,9 +38,7 @@ size_t ByteStream::write(const string &data) {
 //! \param[in] len bytes will be copied from the output side of the buffer
 string ByteStream::peek_output(const size_t len) const {
     // peek the maximum available if len > buffer size
-    size_t l = len;
-    if (l > buffer_size())
-        l = buffer_size();
+    size_t l = min(len, buffer_size());
 
     if (_end > _front) {
         return std::string(_buffer.begin() + _front, _buffer.begin() + _front + l);
@@ -48,7 +46,7 @@ string ByteStream::peek_output(const size_t len) const {
 
     std::string s(_buffer.begin() + _front, _buffer.begin() + min(_front + l, _capacity));
     if (s.size() < l) {
-        s += std::string(_buffer.begin(), _buffer.begin() + l - (_capacity - _front));
+        s.append(_buffer.begin(), _buffer.begin() + l - (_capacity - _front));
     }
     return s;
 }
@@ -81,10 +79,7 @@ void ByteStream::end_input() { _input_ended = true; }
 bool ByteStream::input_ended() const { return _input_ended; }
 
 size_t ByteStream::buffer_size() const {
-    if (buffer_empty())
-        return 0;
-
-    if (_end > _front) {
+    if (_end >= _front) {
         return _end - _front;
     }
 

@@ -56,12 +56,12 @@ class ByteStream {
     //!@{
 
     //! Peek at next "len" bytes of the stream
-    //！ at most buffer_size() bytes will be returned and error() will not be set
+    //! at most buffer_size() bytes will be returned and error() will not be set
     //! \returns a string
     std::string peek_output(const size_t len) const;
 
     //! Remove bytes from the buffer
-    //！ if len > buffer_size(), error() will be set
+    //! if len > buffer_size(), error() will be set
     void pop_output(const size_t len);
 
     //! Read (i.e., copy and then pop) the next "len" bytes of the stream, at most buffer_size() bytes will be returned and error() will not be set
