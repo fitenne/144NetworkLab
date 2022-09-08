@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <list>
 #include <string>
+#include <string_view>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
@@ -15,7 +16,6 @@ class StreamReassembler {
     struct Segment {
         size_t index{0};
         std::string data;
-        // Segment(size_t i, const std::string &&d) : index(i), data(std::move(d)) {}
         Segment(size_t i, const std::string &d) : index(i), data(d) {}
     };
     std::list<Segment> _stroage{};
@@ -44,6 +44,7 @@ class StreamReassembler {
     //! \param index indicates the index (place in sequence) of the first byte in `data`
     //! \param eof the last byte of `data` will be the last byte in the entire stream
     void push_substring(const std::string &data, const uint64_t index, const bool eof);
+    void push_substring(const std::string_view &data, const uint64_t index, const bool eof);
 
     //! \name Access the reassembled byte stream
     //!@{
@@ -63,6 +64,7 @@ class StreamReassembler {
 
   private:
     void _push_stroage(const std::string &data, size_t index, size_t unaccp);
+    void _push_stroage(const std::string_view &data, size_t index, size_t unaccp);
     void _assemble();
 };
 

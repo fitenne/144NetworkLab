@@ -25,7 +25,7 @@ class TCPConnection {
 
     bool _active{true}, _lingering{false}, _input_ended{false}, _output_ended{false};
 
-    void _send_over_internet();
+    void _send_over_network();
     void _may_shutdown();
     void _set_error();
 

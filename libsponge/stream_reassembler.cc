@@ -1,5 +1,7 @@
 #include "stream_reassembler.hh"
 
+#include <string_view>
+
 // Dummy implementation of a stream reassembler.
 
 // For Lab 1, please replace with a real implementation that passes the
@@ -18,6 +20,10 @@ StreamReassembler::StreamReassembler(const size_t capacity) : _output(capacity),
 //! possibly out-of-order, from the logical stream, and assembles any newly
 //! contiguous substrings and writes them into the output stream in order.
 void StreamReassembler::push_substring(const string &data, const size_t index, const bool eof) {
+    push_substring(string_view(data), index, eof);
+}
+
+void StreamReassembler::push_substring(const string_view &data, const size_t index, const bool eof) {
     size_t unaccp = _output.bytes_read() + _capacity;
 
     // push [l, r) to _stroage
@@ -40,9 +46,11 @@ size_t StreamReassembler::unassembled_bytes() const { return _unassembled_bytes;
 
 bool StreamReassembler::empty() const { return _unassembled_bytes == 0; }
 
-void StreamReassembler::_push_stroage(const std::string &data,
-                                      size_t index,
-                                      size_t unaccp) {
+void StreamReassembler::_push_stroage(const std::string &data, size_t index, size_t unaccp) {
+    _push_stroage(string_view(data), index, unaccp);
+}
+
+void StreamReassembler::_push_stroage(const std::string_view &data, size_t index, size_t unaccp) {
     const size_t last_byte = index + data.size();
     size_t interval_start = _unasmed;
     for (auto it = _stroage.begin(); it != _stroage.end(); ++it) {

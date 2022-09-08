@@ -8,11 +8,11 @@
 // automated checks run by `make check`.
 
 template <typename... Targs>
-void DUMMY_CODE(Targs &&... /* unused */) {}
+void DUMMY_CODE(Targs &&.../* unused */) {}
 
 using namespace std;
 
-void TCPConnection::_send_over_internet() {
+void TCPConnection::_send_over_network() {
     auto &que = _sender.segments_out();
     while (!que.empty()) {
         auto &front = que.front();
@@ -31,7 +31,8 @@ void TCPConnection::_send_over_internet() {
         que.pop();
     }
 
-    if (_sender.stream_in().eof() && _sender.bytes_in_flight() == 0 && _sender.next_seqno_absolute() == _sender.stream_in().bytes_written() + 2) {
+    if (_sender.stream_in().eof() && _sender.bytes_in_flight() == 0 &&
+        _sender.next_seqno_absolute() == _sender.stream_in().bytes_written() + 2) {
         _output_ended = true;
     }
     _may_shutdown();
@@ -62,7 +63,8 @@ size_t TCPConnection::unassembled_bytes() const { return _receiver.unassembled_b
 size_t TCPConnection::time_since_last_segment_received() const { return _time_since_last_segment_received; }
 
 void TCPConnection::segment_received(const TCPSegment &seg) {
-    if (seg.header().ack && _sender.next_seqno_absolute() == 0) return; // CLOSED
+    if (seg.header().ack && _sender.next_seqno_absolute() == 0)
+        return;  // CLOSED
     if (seg.header().rst) {
         _set_error();
         return;
@@ -74,7 +76,7 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
     if (_receiver.ackno().has_value() and (seg.length_in_sequence_space() == 0) and
         seg.header().seqno == _receiver.ackno().value() - 1) {
         _sender.send_empty_segment();
-        _send_over_internet();
+        _send_over_network();
         return;
     }
 
@@ -92,7 +94,7 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
         //! prefer fill, fallback to empty segment to asure at least one segment is sent
         _sender.send_empty_segment();
     }
-    _send_over_internet();
+    _send_over_network();
     _may_shutdown();
 }
 
@@ -101,7 +103,7 @@ bool TCPConnection::active() const { return _active; }
 size_t TCPConnection::write(const string &data) {
     auto bytes = _sender.stream_in().write(data);
     _sender.fill_window();
-    _send_over_internet();
+    _send_over_network();
     return bytes;
 }
 
@@ -113,7 +115,7 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
         _sender.segments_out().back().header().rst = true;
     }
 
-    _send_over_internet();
+    _send_over_network();
     if (_lingering && _time_since_last_segment_received >= 10 * _cfg.rt_timeout) {
         _active = false;
     }
@@ -122,12 +124,12 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
 void TCPConnection::end_input_stream() {
     _sender.stream_in().end_input();
     _sender.fill_window();
-    _send_over_internet();
+    _send_over_network();
 }
 
 void TCPConnection::connect() {
     _sender.fill_window();
-    _send_over_internet();
+    _send_over_network();
 }
 
 TCPConnection::~TCPConnection() {
@@ -138,7 +140,7 @@ TCPConnection::~TCPConnection() {
             // Your code here: need to send a RST segment to the peer
             _sender.send_empty_segment();
             _sender.segments_out().back().header().rst = true;
-            _send_over_internet();
+            _send_over_network();
         }
     } catch (const exception &e) {
         std::cerr << "Exception destructing TCP FSM: " << e.what() << std::endl;
